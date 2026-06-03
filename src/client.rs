@@ -426,9 +426,10 @@ impl Client {
 
         if !key.is_empty() && !token.is_empty() {
             // mainly for the security of token
+            log::info!("[ALFRED-DEBUG] Calling secure_tcp for punch_hole, key_len={}, token_len={}, peer={}", key.len(), token.len(), peer);
             secure_tcp(&mut socket, &key)
                 .await
-                .map_err(|e| anyhow!("Failed to secure tcp: {}", e))?;
+                .map_err(|e| {log::error!("[ALFRED-DEBUG] secure_tcp FAILED: {}", e); anyhow!("Failed to secure tcp: {}", e)})?;
         } else if let Some(udp) = udp.1.as_ref() {
             let tm = Instant::now();
             loop {

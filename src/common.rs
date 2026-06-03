@@ -1941,13 +1941,17 @@ async fn secure_tcp_impl(conn: &mut Stream, key: &str, log_on_success: bool) -> 
     // as WebSocket Secure (wss://) already provides transport layer encryption.
     // This doesn't affect the end-to-end encryption between clients,
     // it only avoids redundant encryption between client and server.
+    log::info!("[ALFRED-DEBUG] secure_tcp_impl called, key_len={}, use_ws={}", key.len(), use_ws());
     if use_ws() {
+        log::info!("[ALFRED-DEBUG] Using WebSocket, skipping secure_tcp");
         return Ok(());
     }
     let rs_pk = get_rs_pk(key);
+    log::info!("[ALFRED-DEBUG] rs_pk result: {}", rs_pk.is_some());
     let Some(rs_pk) = rs_pk else {
         bail!("Handshake failed: invalid public key from rendezvous server");
     };
+    log::info!("[ALFRED-DEBUG] Waiting for KeyExchange from server, timeout={}ms", READ_TIMEOUT);
     match timeout(READ_TIMEOUT, conn.next()).await? {
         Some(Ok(bytes)) => {
             if let Ok(msg_in) = RendezvousMessage::parse_from_bytes(&bytes) {
